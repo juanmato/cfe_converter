@@ -3,3 +3,7 @@ __pycache__/
 *.pyo
 .env
 *.tmp
+build/
+dist/
+*.spec
+logo_clean.png

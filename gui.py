@@ -6,6 +6,17 @@ import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 import logging
+import ctypes
+
+# Hacer que Windows use el ícono de la app en la barra de tareas, no el de Python
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("cfe_converter")
+
+
+def resource_path(relative_path):
+    """Obtiene la ruta correcta tanto en desarrollo como empaquetado con PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 from reader import leer_excel
 from rules import generar_asientos
@@ -50,14 +61,11 @@ class CFEConverterApp:
         self._setup_logging()
 
     def _load_logo(self):
-        """Carga el logo desde el directorio del script."""
-        self.logo_image = None
+        """Carga el logo .ico para la barra de título y barra de tareas de Windows."""
         try:
-            logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
-            if os.path.isfile(logo_path):
-                self.logo_image = tk.PhotoImage(file=logo_path)
-                # Usar como ícono de la ventana
-                self.root.iconphoto(True, self.logo_image)
+            ico_path = resource_path("logo.ico")
+            if os.path.isfile(ico_path):
+                self.root.iconbitmap(ico_path)
         except Exception:
             pass
 
@@ -75,20 +83,8 @@ class CFEConverterApp:
         main = ttk.Frame(self.root, padding=15)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # --- Título con logo ---
-        header = ttk.Frame(main)
-        header.pack(fill=tk.X)
-
-        if self.logo_image:
-            # Escalar logo a ~48px (subsample reduce por factor entero)
-            w = self.logo_image.width()
-            factor = max(1, w // 48)
-            self.logo_small = self.logo_image.subsample(factor, factor)
-            logo_label = ttk.Label(header, image=self.logo_small, background="#f0f0f0")
-            logo_label.pack(side=tk.LEFT, padx=(0, 10))
-
-        ttk.Label(header, text="CFE Converter", style="Title.TLabel").pack(side=tk.LEFT, anchor="s")
-        ttk.Label(header, text="  Conversor CFE a formato Memory", font=("Segoe UI", 10, "italic"), background="#f0f0f0").pack(side=tk.LEFT, anchor="s", pady=(0, 2))
+        # --- Título ---
+        ttk.Label(main, text="Conversor CFE a formato Memory", style="Title.TLabel").pack(anchor="w")
         ttk.Separator(main, orient="horizontal").pack(fill=tk.X, pady=(5, 12))
 
         # --- Archivo de entrada ---
